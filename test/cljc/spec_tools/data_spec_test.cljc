@@ -218,6 +218,42 @@
             value-string {:a-double "217322.123"}]
         (is (= value-string (st/encode spec value st/string-transformer))))))
 
+  (testing "encoding with s/? spec"
+    (testing "when value matches first form"
+      (let [spec (ds/spec {:name ::int-or-double-or-both-or-none :spec (s/cat :a (s/? (ds/spec {:name ::a-spec
+                                                                                                 :spec {:an-int int?}}))
+                                                                              :b (s/? (ds/spec {:name ::b-spec
+                                                                                                 :spec {:a-double double?}})))})
+            value '({:an-int 217322})
+            value-string '({:an-int "217322"})]
+        (is (= value-string (st/encode spec value st/string-transformer)))))
+    (testing "when value matches second form"
+      (let [spec (ds/spec {:name ::int-or-double-or-both-or-none :spec (s/cat :a (s/? (ds/spec {:name ::a-spec
+                                                                                                :spec {:an-int int?}}))
+                                                                              :b (s/? (ds/spec {:name ::b-spec
+                                                                                                :spec {:a-double double?}})))})
+            value '({:a-double 217322.123})
+            value-string '({:a-double "217322.123"})]
+        (is (= value-string (st/encode spec value st/string-transformer))))))
+
+  (testing "encoding with s/? spec and optional keys"
+    (testing "when value matches first form"
+      (let [spec (ds/spec {:name ::int-or-double-or-both-or-none :spec (s/cat :a (s/? (ds/spec {:name ::a-spec
+                                                                                                :spec {:an-int int?}}))
+                                                                              :b (s/? (ds/spec {:name ::b-spec
+                                                                                                :spec {(ds/opt :a-double) double?}})))})
+            value '({:an-int 217322})
+            value-string '({:an-int "217322"})]
+        (is (= value-string (st/encode spec value st/string-transformer)))))
+    (testing "when value matches second form"
+      (let [spec (ds/spec {:name ::int-or-double-or-both-or-none :spec (s/cat :a (s/? (ds/spec {:name ::a-spec
+                                                                                                :spec {(ds/opt :an-int) int?}}))
+                                                                              :b (s/? (ds/spec {:name ::b-spec
+                                                                                                :spec {:a-double double?}})))})
+            value '({:a-double 217322.123})
+            value-string '({:a-double "217322.123"})]
+        (is (= value-string (st/encode spec value st/string-transformer))))))
+
   (testing "top-level vector"
     (is (true?
           (s/valid?
